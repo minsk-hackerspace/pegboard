@@ -6,25 +6,27 @@ boardThickness = 6.5;
 holeDiameter = 6.05;
 pinEndHeight = 1.5;
 coneHeight = 2.5;
-pinBaseHeight = boardThickness + pinEndHeight + coneHeight;
 
-module pinBase(pinDiameter)
+pinBaseHeight = boardThickness + pinEndHeight + coneHeight + 0.5;
+
+module pinBase(pinDiameter, pinConeHeight=coneHeight, endConeHeight=2)
 {
-    translate([0, 0, -2 - (boardThickness + 0.5) - coneHeight])
+    thickness = boardThickness + 0.5;
+    translate([0, 0, -endConeHeight - thickness - coneHeight])
         difference() {
             union()
             {
-                cylinder(h=2, d1=(holeDiameter - 2), d2=(holeDiameter + 1));
+                cylinder(h=endConeHeight, d1=(holeDiameter - 2), d2=(holeDiameter + 1)); // end cone
             
-                translate([0, 0, 2])
-                    cylinder(h=(boardThickness + 0.5), d=holeDiameter);
+                translate([0, 0, endConeHeight])
+                    cylinder(h=thickness, d=holeDiameter); 
                 
-                translate([0, 0, 9])
-                    cylinder(h=coneHeight, d1=(holeDiameter + 2), d2=pinDiameter);
+                translate([0, 0, thickness + endConeHeight])
+                    cylinder(h=pinConeHeight, d1=(holeDiameter + 2), d2=pinDiameter);
             }
-            cube([(holeDiameter + 1), 1, (2 + boardThickness + 0.5) * 2], center=true);
+            cube([(holeDiameter + 1), 1, (2 + thickness) * 2], center=true);
             translate([holeDiameter / 2-0.05, -holeDiameter / 2, 0]) cube([2, holeDiameter, pinBaseHeight]);
-            translate([-holeDiameter / 2 - 1, -2, 0]) cube([1, 4, coneHeight + 0.5]);
+            translate([-holeDiameter / 2 - 1, -2, 0]) cube([1, 4, pinConeHeight + 0.5]);
         }
 }
 
@@ -54,6 +56,30 @@ module ring_hook(d, d1) {
     //translate([0, 0, d1/4]) cube([d1, d1 * 2, d1*1.5], center=true);
 }
 
+module horizontal_pin(d, h, end=0)
+difference() {
+    union() {
+        //pin
+        rotate([180, 90, 0])
+        translate([0, 0, -h])
+        union() {
+            pinBase(d);
+            cylinder(d=d, h=h);
+        }
+        
+        // round end with hook
+        hull() {
+            sphere(r = d / 2);
+            translate([0, end, 0]) sphere(r = d / 2);  
+        }
+    }
+    // bottom cut
+    translate([0, -d * 2, -d * 1.5])
+    cube([h + boardThickness * 2, d * 4, d]);
+    // top cut
+    translate([0, -d * 2, d / 2 + 1])
+    cube([h + boardThickness * 2, d * 4, d]);
+}
 
 module pinArray() {
     for (i = [0 : 4]) {
@@ -84,5 +110,12 @@ module ringArray() {
     translate([100, 90, 0]) rotate([0, 90, 0]) ring_hook(27.5, 4);
     translate([70, 110, 0]) rotate([0, 90, 0]) ring_hook(30, 4);
 }
+
 pinArray();
 ringArray();
+
+translate([50,50,0]) rotate([0,0,180])
+horizontal_pin(d=5, h=35, end=4);
+
+translate([50,60,0]) rotate([0,0,180])
+horizontal_pin(d=5, h=35, end=0);
