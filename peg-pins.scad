@@ -56,6 +56,30 @@ module ring_hook(d, d1) {
     //translate([0, 0, d1/4]) cube([d1, d1 * 2, d1*1.5], center=true);
 }
 
+module horizontal_pin(d, h, end=0)
+difference() {
+    union() {
+        //pin
+        rotate([180, 90, 0])
+        translate([0, 0, -h])
+        union() {
+            pinBase(d);
+            cylinder(d=d, h=h);
+        }
+        
+        // round end with hook
+        hull() {
+            sphere(r = d / 2);
+            translate([0, end, 0]) sphere(r = d / 2);  
+        }
+    }
+    // bottom cut
+    translate([0, -d * 2, -d * 1.5])
+    cube([h + boardThickness * 2, d * 4, d]);
+    // top cut
+    translate([0, -d * 2, d / 2 + 1])
+    cube([h + boardThickness * 2, d * 4, d]);
+}
 
 module pinArray() {
     for (i = [0 : 4]) {
@@ -86,5 +110,12 @@ module ringArray() {
     translate([100, 90, 0]) rotate([0, 90, 0]) ring_hook(27.5, 4);
     translate([70, 110, 0]) rotate([0, 90, 0]) ring_hook(30, 4);
 }
+
 pinArray();
 ringArray();
+
+translate([50,50,0]) rotate([0,0,180])
+horizontal_pin(d=5, h=35, end=4);
+
+translate([50,60,0]) rotate([0,0,180])
+horizontal_pin(d=5, h=35, end=0);
