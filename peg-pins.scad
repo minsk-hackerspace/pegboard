@@ -6,25 +6,27 @@ boardThickness = 6.5;
 holeDiameter = 6.05;
 pinEndHeight = 1.5;
 coneHeight = 2.5;
-pinBaseHeight = boardThickness + pinEndHeight + coneHeight;
 
-module pinBase(pinDiameter)
+pinBaseHeight = boardThickness + pinEndHeight + coneHeight + 0.5;
+
+module pinBase(pinDiameter, pinConeHeight=coneHeight, endConeHeight=2)
 {
-    translate([0, 0, -2 - (boardThickness + 0.5) - coneHeight])
+    thickness = boardThickness + 0.5;
+    translate([0, 0, -endConeHeight - thickness - coneHeight])
         difference() {
             union()
             {
-                cylinder(h=2, d1=(holeDiameter - 2), d2=(holeDiameter + 1));
+                cylinder(h=endConeHeight, d1=(holeDiameter - 2), d2=(holeDiameter + 1)); // end cone
             
-                translate([0, 0, 2])
-                    cylinder(h=(boardThickness + 0.5), d=holeDiameter);
+                translate([0, 0, endConeHeight])
+                    cylinder(h=thickness, d=holeDiameter); 
                 
-                translate([0, 0, 9])
-                    cylinder(h=coneHeight, d1=(holeDiameter + 2), d2=pinDiameter);
+                translate([0, 0, thickness + endConeHeight])
+                    cylinder(h=pinConeHeight, d1=(holeDiameter + 2), d2=pinDiameter);
             }
-            cube([(holeDiameter + 1), 1, (2 + boardThickness + 0.5) * 2], center=true);
+            cube([(holeDiameter + 1), 1, (2 + thickness) * 2], center=true);
             translate([holeDiameter / 2-0.05, -holeDiameter / 2, 0]) cube([2, holeDiameter, pinBaseHeight]);
-            translate([-holeDiameter / 2 - 1, -2, 0]) cube([1, 4, coneHeight + 0.5]);
+            translate([-holeDiameter / 2 - 1, -2, 0]) cube([1, 4, pinConeHeight + 0.5]);
         }
 }
 
